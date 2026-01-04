@@ -5,9 +5,11 @@ import { useForm } from "react-hook-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Spinner } from "@/components/ui/spinner"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { useApi } from "@/hooks/use-api"
 import { apiService, type PredictionResponse } from "@/lib/api-service"
 import { 
@@ -29,7 +31,7 @@ import {
   Zap,
   Target
 } from "lucide-react"
-import { generateRandomFeatures } from "@/lib/random-data-generator"
+import { generateRandomFeatures, generateMaliciousFeatures } from "@/lib/random-data-generator"
 
 // Feature groups with descriptions and icons
 const FEATURE_GROUPS = [
@@ -198,6 +200,7 @@ export default function SinglePrediction() {
   const predictionApi = useApi<PredictionResponse>()
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["basic"]))
   const [isVisible, setIsVisible] = useState(false)
+  const [generateMalicious, setGenerateMalicious] = useState(false)
 
   const formValues = watch()
 
@@ -256,7 +259,9 @@ export default function SinglePrediction() {
   }
 
   const generateRandom = () => {
-    const randomData = generateRandomFeatures()
+    const randomData = generateMalicious 
+      ? generateMaliciousFeatures() 
+      : generateRandomFeatures()
     Object.entries(randomData).forEach(([featureName, value]) => {
       setValue(featureName, String(value))
     })
@@ -325,17 +330,30 @@ export default function SinglePrediction() {
               </div>
               
               {/* Quick Actions */}
-              <div className="flex gap-2 mt-4 flex-wrap">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={generateRandom} 
-                  className="gap-2"
-                >
-                  <Wand2 className="w-4 h-4" />
-                  Generate Random Data
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={generateRandom} 
+                    className="gap-2"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                    Generate Random Data
+                  </Button>
+                  <div className="flex items-center gap-2 px-3 py-1.5 border rounded-md bg-muted/50">
+                    <Label htmlFor="malicious-toggle" className="text-sm cursor-pointer">
+                      Malicious Pattern
+                    </Label>
+                    <Switch
+                      id="malicious-toggle"
+                      checked={generateMalicious}
+                      onCheckedChange={setGenerateMalicious}
+                    />
+                    <Badge variant={generateMalicious ? "destructive" : "default"} className="text-xs">
+                      {generateMalicious ? "Attack" : "Benign"}
+                    </Badge>
+                  </div>
                 <Button 
                   type="button" 
                   variant="outline" 

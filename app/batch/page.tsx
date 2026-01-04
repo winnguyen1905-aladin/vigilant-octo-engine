@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
@@ -30,7 +31,7 @@ import {
   Copy,
   Check
 } from "lucide-react"
-import { generateRandomBatchJson } from "@/lib/random-data-generator"
+import { generateRandomBatchJson, generateMixedBatchJson } from "@/lib/random-data-generator"
 
 interface FormData {
   jsonData: string
@@ -55,6 +56,7 @@ export default function BatchPrediction() {
   const [isVisible, setIsVisible] = useState(false)
   const [jsonValid, setJsonValid] = useState<boolean | null>(null)
   const [copied, setCopied] = useState(false)
+  const [dataType, setDataType] = useState<"benign" | "malicious" | "mixed">("benign")
 
   const jsonData = watch("jsonData")
   const numFlows = watch("numFlows")
@@ -127,7 +129,12 @@ export default function BatchPrediction() {
   }
 
   const generateRandomBatch = () => {
-    const randomJson = generateRandomBatchJson(numFlows || 5)
+    let randomJson: string
+    if (dataType === "mixed") {
+      randomJson = generateMixedBatchJson(numFlows || 5, 0.5)
+    } else {
+      randomJson = generateRandomBatchJson(numFlows || 5, dataType === "malicious")
+    }
     setValue("jsonData", randomJson)
   }
 
@@ -241,22 +248,59 @@ export default function BatchPrediction() {
                       <p className="text-xs text-muted-foreground mt-1">Control randomness for reproducibility</p>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button
-                      type="button"
-                      onClick={generateRandomBatch}
-                      className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    >
-                      <Wand2 className="w-4 h-4" />
-                      Generate with Seed {seed}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={loadSample}
-                    >
-                      Load Sample Data
-                    </Button>
+                  <div className="space-y-3 mt-4">
+                    <div className="flex items-center gap-3">
+                      <Label className="text-sm font-medium">Data Type:</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant={dataType === "benign" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setDataType("benign")}
+                          className="gap-1"
+                        >
+                          <CheckCircle className="w-3 h-3" />
+                          Benign
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={dataType === "malicious" ? "destructive" : "outline"}
+                          size="sm"
+                          onClick={() => setDataType("malicious")}
+                          className="gap-1"
+                        >
+                          <AlertTriangle className="w-3 h-3" />
+                          Malicious
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={dataType === "mixed" ? "secondary" : "outline"}
+                          size="sm"
+                          onClick={() => setDataType("mixed")}
+                          className="gap-1"
+                        >
+                          <Activity className="w-3 h-3" />
+                          Mixed
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={generateRandomBatch}
+                        className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                      >
+                        <Wand2 className="w-4 h-4" />
+                        Generate {dataType === "mixed" ? "Mixed" : dataType === "malicious" ? "Malicious" : "Benign"} Data
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={loadSample}
+                      >
+                        Load Sample Data
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
