@@ -54,6 +54,41 @@ export interface BatchPredictRequest {
   flows: Array<{ features: Record<string, number> }>
 }
 
+export interface LiveCaptureRequest {
+  interface?: string
+  duration?: number
+  packet_count?: number
+  display_filter?: string
+}
+
+export interface LiveCapturePrediction {
+  flow_index: number
+  prediction: "Benign" | "Malicious"
+  probability: number
+  is_attack: boolean
+  confidence: "Very High" | "High" | "Medium" | "Low"
+  attack_probability: number
+  benign_probability: number
+  error?: string
+}
+
+export interface LiveCaptureResponse {
+  interface: string
+  auto_selected: boolean
+  duration?: number
+  packet_count?: number
+  filter?: string
+  status: "success" | "no_flows"
+  message?: string
+  predictions: LiveCapturePrediction[]
+  summary: {
+    total: number
+    attacks: number
+    benign: number
+    attack_rate: number
+  }
+}
+
 class ApiService {
   private client: AxiosInstance
 
@@ -87,6 +122,16 @@ class ApiService {
     const response = await this.client.post<BatchPredictionResponse>("/predict/batch", {
       flows,
     })
+    return response.data
+  }
+
+  async captureLive(request: LiveCaptureRequest): Promise<LiveCaptureResponse> {
+    const response = await this.client.post<LiveCaptureResponse>("/capture/live", request)
+    return response.data
+  }
+
+  async getInterfaces(): Promise<{ interfaces: string[], auto_selected?: string }> {
+    const response = await this.client.get<{ interfaces: string[], auto_selected?: string }>("/interfaces")
     return response.data
   }
 }

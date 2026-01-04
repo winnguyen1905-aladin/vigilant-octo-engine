@@ -21,7 +21,8 @@ import {
   Layers,
   Zap,
   Eye,
-  BarChart3
+  BarChart3,
+  Radio
 } from "lucide-react"
 
 interface DashboardState {
@@ -474,33 +475,45 @@ export default function Dashboard() {
             <CardDescription>Bắt đầu phát hiện tấn công IoT với hệ thống của chúng tôi</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 {
                   step: "1",
                   icon: Target,
                   title: "Single Flow Analysis",
                   desc: "Phân tích chi tiết một network flow bằng cách nhập các đặc trưng thống kê của flow đó",
-                  color: "blue"
+                  color: "blue",
+                  href: "/predict"
                 },
                 {
                   step: "2",
                   icon: Activity,
                   title: "Batch Processing",
                   desc: "Xử lý hàng loạt nhiều flows đồng thời để tăng throughput và hiệu suất phát hiện",
-                  color: "indigo"
+                  color: "indigo",
+                  href: "/batch"
                 },
                 {
                   step: "3",
+                  icon: Radio,
+                  title: "Live Capture",
+                  desc: "Capture và phân tích network traffic trực tiếp từ interface với các tham số linh hoạt",
+                  color: "green",
+                  href: "/capture"
+                },
+                {
+                  step: "4",
                   icon: Eye,
                   title: "Model Analytics",
                   desc: "Xem chi tiết kiến trúc mô hình, hyperparameters, và performance metrics",
-                  color: "purple"
+                  color: "purple",
+                  href: "/model-info"
                 }
               ].map((item, idx) => (
-                <div 
+                <a
                   key={idx}
-                  className={`group p-5 border-2 border-${item.color}-200 dark:border-${item.color}-800 rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 bg-gradient-to-br from-white to-${item.color}-50 dark:from-slate-900 dark:to-${item.color}-950 cursor-pointer`}
+                  href={item.href}
+                  className={`group p-5 border-2 border-${item.color}-200 dark:border-${item.color}-800 rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 bg-gradient-to-br from-white to-${item.color}-50 dark:from-slate-900 dark:to-${item.color}-950 cursor-pointer block`}
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`w-10 h-10 rounded-full bg-${item.color}-500 flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform`}>
@@ -510,7 +523,7 @@ export default function Dashboard() {
                   </div>
                   <h3 className="font-semibold mb-2 text-lg">{item.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
+                </a>
               ))}
             </div>
           </CardContent>
