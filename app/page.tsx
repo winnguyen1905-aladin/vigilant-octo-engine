@@ -485,14 +485,14 @@ export default function Dashboard() {
                   color: "blue",
                   href: "/predict"
                 },
-                {
-                  step: "2",
-                  icon: Activity,
-                  title: "Batch Processing",
-                  desc: "Xử lý hàng loạt nhiều flows đồng thời để tăng throughput và hiệu suất phát hiện",
-                  color: "indigo",
-                  href: "/batch"
-                },
+                // {
+                //   step: "2",
+                //   icon: Activity,
+                //   title: "Batch Processing",
+                //   desc: "Xử lý hàng loạt nhiều flows đồng thời để tăng throughput và hiệu suất phát hiện",
+                //   color: "indigo",
+                //   href: "/batch"
+                // },
                 {
                   step: "3",
                   icon: Radio,

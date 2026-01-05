@@ -52,9 +52,9 @@ export default function RootLayout({
                 <Link href="/predict" className="hover:opacity-80 transition">
                   Single Prediction
                 </Link>
-                <Link href="/batch" className="hover:opacity-80 transition">
+                {/* <Link href="/batch" className="hover:opacity-80 transition">
                   Batch Prediction
-                </Link>
+                </Link> */}
                 <Link href="/capture" className="hover:opacity-80 transition">
                   Live Capture
                 </Link>

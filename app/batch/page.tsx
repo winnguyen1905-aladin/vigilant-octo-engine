@@ -132,8 +132,12 @@ export default function BatchPrediction() {
     let randomJson: string
     if (dataType === "mixed") {
       randomJson = generateMixedBatchJson(numFlows || 5, 0.5)
+    } else if (dataType === "benign") {
+      // Generate diverse data including some malicious flows (20%) 
+      // to demonstrate detection capabilities even in "default" mode
+      randomJson = generateMixedBatchJson(numFlows || 5, 0.2)
     } else {
-      randomJson = generateRandomBatchJson(numFlows || 5, dataType === "malicious")
+      randomJson = generateRandomBatchJson(numFlows || 5, true)
     }
     setValue("jsonData", randomJson)
   }
@@ -262,6 +266,19 @@ export default function BatchPrediction() {
                           <CheckCircle className="w-3 h-3" />
                           Benign
                         </Button>
+                        {/* Submit Button */}
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={batchApi.loading || !jsonValid} 
+                    className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    size="lg"
+                  >
+                    {batchApi.loading && <Spinner className="w-4 h-4" />}
+                    <Upload className="w-4 h-4" />
+                    Analyze Batch
+                  </Button>
+                </div>
                         <Button
                           type="button"
                           variant={dataType === "malicious" ? "destructive" : "outline"}
@@ -361,19 +378,7 @@ export default function BatchPrediction() {
                   </p>
                 </div>
 
-                {/* Submit Button */}
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleSubmit(onSubmit)}
-                    disabled={batchApi.loading || !jsonValid} 
-                    className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    size="lg"
-                  >
-                    {batchApi.loading && <Spinner className="w-4 h-4" />}
-                    <Upload className="w-4 h-4" />
-                    Analyze Batch
-                  </Button>
-                </div>
+                
               </div>
             </CardContent>
           </Card>
