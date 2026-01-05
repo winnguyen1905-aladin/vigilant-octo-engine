@@ -470,6 +470,27 @@ export default function SinglePrediction() {
                     <Shield className="w-4 h-4" />
                     Analyze Flow
                   </Button>
+                  <Button 
+                    type="button"
+                    disabled={predictionApi.loading}
+                    onClick={() => {
+                      // Generate malicious data
+                      const maliciousData = generateMaliciousFeatures()
+                      Object.entries(maliciousData).forEach(([featureName, value]) => {
+                        setValue(featureName, String(value))
+                      })
+                      // Submit form automatically
+                      setTimeout(() => {
+                        handleSubmit(onSubmit)()
+                      }, 100)
+                    }}
+                    className="gap-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+                    size="lg"
+                  >
+                    {predictionApi.loading && <Spinner className="w-4 h-4" />}
+                    <AlertTriangle className="w-4 h-4" />
+                    Generate Malicious Attack
+                  </Button>
                 </div>
               </form>
             </CardContent>

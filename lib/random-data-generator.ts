@@ -119,74 +119,69 @@ export function generateRandomFeatures(): Record<string, number> {
 export function generateMaliciousFeatures(): Record<string, number> {
   const features: Record<string, number> = {}
   
-  // Short duration (1-10 seconds) - typical for attacks
-  const duration = randomInRange(1000, 10000, true)
-  features["Flow Duration"] = duration
+  // Profile: DDoS SYN Flood (High Confidence)
+  // Characteristics: High rate of SYN packets, no backward traffic, consistent small packet size
   
-  // High forward packets, ZERO backward (strong one-way attack pattern)
-  // Based on MALICIOUS_FLOW: 1000 packets, 0 backward
-  const fwdPackets = randomInRange(500, 3000, true)
-  const bwdPackets = 0 // Always zero for pure attack pattern
-  features["Total Fwd Packets"] = fwdPackets
-  features["Total Backward Packets"] = bwdPackets
+  // 1. Primary Volumetrics
+  const durationMicros = randomInRange(1000000, 5000000, true) // 1 to 5 seconds
+  const durationSeconds = durationMicros / 1000000
   
-  // Forward bytes: ~50 bytes per packet (small SYN packets)
-  // Based on MALICIOUS_FLOW: 50000 bytes for 1000 packets = 50 bytes/packet
-  const avgPacketSize = randomInRange(40, 60, true)
-  const fwdBytes = fwdPackets * avgPacketSize
-  features["Total Length of Fwd Packets"] = fwdBytes
-  features["Total Length of Bwd Packets"] = 0
+  const packetCount = randomInRange(20000, 100000, true) // Very high traffic
+  const bwdPacketCount = 0
   
-  // Packet sizes: small packets typical of port scans/DDoS
-  // Based on MALICIOUS_FLOW: Mean=50, Min=10, Max=1000, Std=100
-  features["Fwd Packet Length Max"] = randomInRange(100, 1000, true)
-  features["Fwd Packet Length Min"] = randomInRange(10, 60, true)
-  features["Fwd Packet Length Mean"] = avgPacketSize
-  features["Fwd Packet Length Std"] = randomInRange(50, 150, true) // High variance
+  const packetSize = 60 // Typical TCP SYN packet size (approx)
+  const totalFwdBytes = packetCount * packetSize
+  const totalBwdBytes = 0
   
-  // Zero backward packets
+  // 2. Consistent Feature Sets
+  features["Flow Duration"] = durationMicros
+  features["Total Fwd Packets"] = packetCount
+  features["Total Backward Packets"] = bwdPacketCount
+  features["Total Length of Fwd Packets"] = totalFwdBytes
+  features["Total Length of Bwd Packets"] = totalBwdBytes
+  
+  // 3. Length Stats (Zero Variance for SYN flood tools)
+  features["Fwd Packet Length Max"] = packetSize
+  features["Fwd Packet Length Min"] = packetSize
+  features["Fwd Packet Length Mean"] = packetSize
+  features["Fwd Packet Length Std"] = 0
+  
   features["Bwd Packet Length Max"] = 0
   features["Bwd Packet Length Min"] = 0
   features["Bwd Packet Length Mean"] = 0
   features["Bwd Packet Length Std"] = 0
   
-  // Calculate rates based on actual values (like MALICIOUS_FLOW)
-  const durationSec = duration / 1000
-  const flowBytesPerSec = fwdBytes / durationSec
-  const flowPacketsPerSec = fwdPackets / durationSec
-  
-  features["Flow Bytes/s"] = Math.round(flowBytesPerSec * 100) / 100
-  features["Flow Packets/s"] = Math.round(flowPacketsPerSec * 100) / 100
-  features["Fwd Packets/s"] = features["Flow Packets/s"]
+  // 4. Flow Rates (Must be consistent)
+  features["Flow Bytes/s"] = totalFwdBytes / durationSeconds
+  features["Flow Packets/s"] = packetCount / durationSeconds
+  features["Fwd Packets/s"] = packetCount / durationSeconds
   features["Bwd Packets/s"] = 0
   
-  // Inter-arrival times: very low (rapid attack)
-  // Based on MALICIOUS_FLOW: IAT Mean = 5.0, Std = 2.0
-  const iatMean = duration / fwdPackets
-  const iatStd = iatMean * randomInRange(0.3, 0.5, false)
+  // 5. Inter-Arrival Times (Extremely small and consistent)
+  const iatMean = durationMicros / packetCount
+  features["Flow IAT Mean"] = iatMean
+  features["Flow IAT Std"] = 0
+  features["Flow IAT Max"] = iatMean
+  features["Flow IAT Min"] = iatMean
   
-  features["Flow IAT Mean"] = Math.round(iatMean * 100) / 100
-  features["Flow IAT Std"] = Math.round(iatStd * 100) / 100
-  features["Fwd IAT Total"] = duration
-  features["Fwd IAT Mean"] = features["Flow IAT Mean"]
-  features["Fwd IAT Std"] = features["Flow IAT Std"]
-  features["Fwd IAT Max"] = Math.round((features["Fwd IAT Mean"] + features["Fwd IAT Std"] * 2) * 100) / 100
-  features["Fwd IAT Min"] = Math.max(0.1, Math.round((features["Fwd IAT Mean"] - features["Fwd IAT Std"]) * 100) / 100)
+  features["Fwd IAT Total"] = durationMicros
+  features["Fwd IAT Mean"] = iatMean
+  features["Fwd IAT Std"] = 0
+  features["Fwd IAT Max"] = iatMean
+  features["Fwd IAT Min"] = iatMean
   
-  // Zero backward IAT
   features["Bwd IAT Total"] = 0
   features["Bwd IAT Mean"] = 0
   features["Bwd IAT Std"] = 0
   features["Bwd IAT Max"] = 0
   features["Bwd IAT Min"] = 0
   
-  // Attack flags: SYN flood pattern
-  // Based on MALICIOUS_FLOW: SYN = Total Fwd Packets (each packet is SYN)
-  features["SYN Flag Count"] = fwdPackets
+  // 6. Flags (The "Smoking Gun" for SYN Flood)
+  features["SYN Flag Count"] = packetCount 
+  features["FIN Flag Count"] = 0
   features["RST Flag Count"] = 0
-  features["ACK Flag Count"] = 0 // No ACK = no proper connection
-  features["FIN Flag Count"] = 0 // No proper termination
   features["PSH Flag Count"] = 0
+  features["ACK Flag Count"] = 0
   features["URG Flag Count"] = 0
   features["CWE Flag Count"] = 0
   features["ECE Flag Count"] = 0
@@ -195,54 +190,54 @@ export function generateMaliciousFeatures(): Record<string, number> {
   features["Fwd URG Flags"] = 0
   features["Bwd URG Flags"] = 0
   
-  // Header lengths: small (SYN packets are ~20-40 bytes)
-  // Based on MALICIOUS_FLOW: Fwd Header Length = 20
-  features["Fwd Header Length"] = randomInRange(20, 40, true)
+  // 7. Header & Overhead
+  const headerSize = 20 // TCP Standard Header
+  features["Fwd Header Length"] = packetCount * headerSize
   features["Bwd Header Length"] = 0
   features["Fwd Header Length.1"] = features["Fwd Header Length"]
   
-  // Packet statistics
-  features["Min Packet Length"] = features["Fwd Packet Length Min"]
-  features["Max Packet Length"] = features["Fwd Packet Length Max"]
-  features["Packet Length Mean"] = features["Fwd Packet Length Mean"]
-  features["Packet Length Std"] = features["Fwd Packet Length Std"]
-  features["Packet Length Variance"] = Math.round(Math.pow(features["Packet Length Std"], 2) * 100) / 100
-  features["Average Packet Size"] = features["Fwd Packet Length Mean"]
-  features["Avg Fwd Segment Size"] = features["Fwd Packet Length Mean"]
+  features["Down/Up Ratio"] = 0
+  features["Average Packet Size"] = packetSize
+  features["Avg Fwd Segment Size"] = packetSize
   features["Avg Bwd Segment Size"] = 0
   
-  // Bulk rates: zero (no bulk transfer in port scans)
+  // 8. Subflow (Mirror main flow)
+  features["Subflow Fwd Packets"] = packetCount
+  features["Subflow Fwd Bytes"] = totalFwdBytes
+  features["Subflow Bwd Packets"] = 0
+  features["Subflow Bwd Bytes"] = 0
+  
+  // 9. Windows & Active/Idle
+  features["Init Win Bytes Fwd"] = 1024 // Small window often seen in floods
+  features["Init Win Bytes Bwd"] = 0
+  features["Fwd Act Data Pkts"] = 0 // Control packets only
+  features["Fwd Seg Size Min"] = 20
+  
+  // Flood = Always Active
+  features["Active Mean"] = durationMicros
+  features["Active Std"] = 0
+  features["Active Max"] = durationMicros
+  features["Active Min"] = durationMicros
+  
+  features["Idle Mean"] = 0
+  features["Idle Std"] = 0
+  features["Idle Max"] = 0
+  features["Idle Min"] = 0
+  
+  // General Packet Stats
+  features["Min Packet Length"] = packetSize
+  features["Max Packet Length"] = packetSize
+  features["Packet Length Mean"] = packetSize
+  features["Packet Length Std"] = 0
+  features["Packet Length Variance"] = 0
+  
+  // Bulk (unused)
   features["Fwd Avg Bytes/Bulk Rate"] = 0
   features["Fwd Avg Packets/Bulk Rate"] = 0
   features["Fwd Avg Bulk Rate"] = 0
   features["Bwd Avg Bytes/Bulk Rate"] = 0
   features["Bwd Avg Packets/Bulk Rate"] = 0
   features["Bwd Avg Bulk Rate"] = 0
-  
-  // Subflow features match main flow exactly
-  features["Subflow Fwd Packets"] = fwdPackets
-  features["Subflow Fwd Bytes"] = fwdBytes
-  features["Subflow Bwd Packets"] = 0
-  features["Subflow Bwd Bytes"] = 0
-  
-  // Window sizes: low or zero (no proper connection)
-  features["Init Win Bytes Fwd"] = randomInRange(0, 5000, true)
-  features["Init Win Bytes Bwd"] = 0
-  features["Fwd Act Data Pkts"] = 0 // No data packets in SYN flood
-  features["Fwd Seg Size Min"] = randomInRange(0, 20, true)
-  
-  // Activity/Idle times: very short for rapid attacks
-  features["Active Mean"] = randomInRange(50, 1000, true)
-  features["Active Std"] = randomInRange(20, 300, true)
-  features["Active Max"] = randomInRange(100, 2000, true)
-  features["Active Min"] = randomInRange(5, 50, true)
-  features["Idle Mean"] = 0 // No idle time
-  features["Idle Std"] = 0
-  features["Idle Max"] = 0
-  features["Idle Min"] = 0
-  
-  // Down/Up ratio = 0 (pure one-way attack)
-  features["Down/Up Ratio"] = 0
 
   return features
 }
