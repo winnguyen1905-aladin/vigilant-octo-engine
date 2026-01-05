@@ -266,12 +266,10 @@ export default function SinglePrediction() {
       setValue(featureName, String(value))
     })
 
-    // Auto-submit if generating malicious data for immediate feedback
-    if (generateMalicious) {
-      setTimeout(() => {
-        handleSubmit(onSubmit)()
-      }, 100)
-    }
+    // Auto-submit for immediate feedback
+    setTimeout(() => {
+      handleSubmit(onSubmit)()
+    }, 100)
   }
 
   const colorClasses = {
@@ -470,7 +468,7 @@ export default function SinglePrediction() {
                   )
                 })}
 
-                <div className="flex gap-2 pt-4">
+                {/* <div className="flex gap-2 pt-4">
                   <Button 
                     type="submit" 
                     disabled={predictionApi.loading} 
@@ -481,7 +479,7 @@ export default function SinglePrediction() {
                     <Shield className="w-4 h-4" />
                     Analyze Flow
                   </Button>
-                </div>
+                </div> */}
               </form>
             </CardContent>
           </Card>
