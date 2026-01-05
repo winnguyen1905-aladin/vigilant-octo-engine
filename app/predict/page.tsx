@@ -265,6 +265,13 @@ export default function SinglePrediction() {
     Object.entries(randomData).forEach(([featureName, value]) => {
       setValue(featureName, String(value))
     })
+
+    // Auto-submit if generating malicious data for immediate feedback
+    if (generateMalicious) {
+      setTimeout(() => {
+        handleSubmit(onSubmit)()
+      }, 100)
+    }
   }
 
   const colorClasses = {
@@ -333,13 +340,17 @@ export default function SinglePrediction() {
                 <div className="flex gap-2 flex-wrap">
                   <Button 
                     type="button" 
-                    variant="outline" 
+                    variant={generateMalicious ? "default" : "outline"}
                     size="sm"
                     onClick={generateRandom} 
-                    className="gap-2"
+                    className={`gap-2 transition-all duration-300 ${
+                      generateMalicious 
+                        ? "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white border-0" 
+                        : ""
+                    }`}
                   >
-                    <Wand2 className="w-4 h-4" />
-                    Generate Random Data
+                    {generateMalicious ? <AlertTriangle className="w-4 h-4" /> : <Wand2 className="w-4 h-4" />}
+                    {generateMalicious ? "Generate Attack Data" : "Generate Random Data"}
                   </Button>
                   <div className="flex items-center gap-2 px-3 py-1.5 border rounded-md bg-muted/50">
                     <Label htmlFor="malicious-toggle" className="text-sm cursor-pointer">
@@ -469,27 +480,6 @@ export default function SinglePrediction() {
                     {predictionApi.loading && <Spinner className="w-4 h-4" />}
                     <Shield className="w-4 h-4" />
                     Analyze Flow
-                  </Button>
-                  <Button 
-                    type="button"
-                    disabled={predictionApi.loading}
-                    onClick={() => {
-                      // Generate malicious data
-                      const maliciousData = generateMaliciousFeatures()
-                      Object.entries(maliciousData).forEach(([featureName, value]) => {
-                        setValue(featureName, String(value))
-                      })
-                      // Submit form automatically
-                      setTimeout(() => {
-                        handleSubmit(onSubmit)()
-                      }, 100)
-                    }}
-                    className="gap-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
-                    size="lg"
-                  >
-                    {predictionApi.loading && <Spinner className="w-4 h-4" />}
-                    <AlertTriangle className="w-4 h-4" />
-                    Generate Malicious Attack
                   </Button>
                 </div>
               </form>
